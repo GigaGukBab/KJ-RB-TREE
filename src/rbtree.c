@@ -2,6 +2,8 @@
 #include <stdlib.h>
 
 void _delete_node(rbtree *t, node_t *node);
+void _rotate_left(rbtree *t, node_t *x);
+void _rotate_right(rbtree *t, node_t *x);
 
 rbtree *new_rbtree(void)
 {
@@ -20,6 +22,67 @@ rbtree *new_rbtree(void)
   t->root = nil;
 
   return t;
+}
+
+void _rotate_left(rbtree *t, node_t *x)
+{
+  node_t *y = x->right;
+  node_t *beta = y->left;
+
+  x->right = beta;
+
+  if (beta != t->nil) // if y's left node is NIL node, then we don't have to update NIL node's parent.
+  {
+    y->left->parent = x; // Beta's parent is not conneted, so we update Beta's parent to x.
+  }
+  y->parent = x->parent;
+
+  if (x->parent == t->nil) // if current x parent node is nil node, we just make y to root.
+  {
+    t->root = y;
+  }
+  else if (x->parent->left == x)
+  {
+    x->parent->left = y;
+  }
+  else
+  {
+    x->parent->right = y;
+  }
+
+  y->left = x;
+  x->parent = y;
+}
+
+void _rotate_right(rbtree *t, node_t *y)
+{
+  node_t *x = y->left;
+  node_t *beta = x->right;
+
+  y->left = beta;
+
+  if (beta != t->nil)
+  {
+    beta->parent = y;
+  }
+
+  x->parent = y->parent;
+
+  if (y->parent == t->nil)
+  {
+    t->root = x;
+  }
+  else if (y->parent->left == y)
+  {
+    y->parent->left = x;
+  }
+  else
+  {
+    y->parent->right = x;
+  }
+
+  x->right = y;
+  y->parent = x;
 }
 
 void _delete_node(rbtree *t, node_t *node)
