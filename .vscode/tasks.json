@@ -10,6 +10,16 @@
         "isDefault": true
       },
       "problemMatcher": []
+    },
+    {
+      "label": "visualize",
+      "type": "shell",
+      "command": "make visualize",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
     }
   ]
 }
