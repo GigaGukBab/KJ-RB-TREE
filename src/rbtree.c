@@ -5,8 +5,22 @@ void _delete_node(rbtree *t, node_t *node);
 
 rbtree *new_rbtree(void)
 {
-  rbtree *p = (rbtree *)calloc(1, sizeof(rbtree));
+  // initalize rbtree structure
+  rbtree *t = (rbtree *)calloc(1, sizeof(rbtree));
 
+  // initalize NIL node
+  node_t *nil = (node_t *)calloc(1, sizeof(node_t));
+  nil->color = RBTREE_BLACK;
+  nil->key = 0;
+  nil->parent = NULL;
+  nil->left = NULL;
+  nil->right = NULL;
+
+  t->nil = nil;
+  t->root = nil;
+
+  return t;
+}
 
 void _delete_node(rbtree *t, node_t *node)
 {
