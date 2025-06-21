@@ -1,27 +1,33 @@
 #include "rbtree.h"
-
 #include <stdlib.h>
+
+void _delete_node(rbtree *t, node_t *node);
 
 rbtree *new_rbtree(void)
 {
   rbtree *p = (rbtree *)calloc(1, sizeof(rbtree));
 
-  node_t *nilNode = (node_t *)calloc(1, sizeof(node_t));
-  nilNode->color = RBTREE_BLACK;
-  nilNode->key = NULL;
-  nilNode->parent = NULL;
-  nilNode->left = NULL;
-  nilNode->right = NULL;
 
-  p->nil = nilNode;
-  p->root = p->nil;
+void _delete_node(rbtree *t, node_t *node)
+{
+  // Base condition: if node is NIL node, then return.
+  if (node == t->nil)
+  {
+    return;
+  }
 
-  return p;
+  _delete_node(t, node->left);
+  _delete_node(t, node->right);
+
+  free(node);
 }
 
 void delete_rbtree(rbtree *t)
 {
-  // TODO: reclaim the tree nodes's memory
+  _delete_node(t, t->root);
+  t->root = NULL;
+  free(t->root);
+  free(t->nil);
   free(t);
 }
 
