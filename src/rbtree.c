@@ -160,65 +160,101 @@ node_t *_insert(rbtree *t, const key_t key)
   return new_node;
 }
 
-// CASE 1: 내 부모도 레드고, 내 삼촌도 레드야
-//         내 부모의 색깔을 black으로 칠해
-//         내 uncle의 색깔을 black으로 칠해
-//         내 조상을 red로 칠해
-//         내 조상으로 올라가서 다시 봐
-// CASE 2: 내 조상 노드를 기준으로 내 부모 노드가 어디 있는지 확인했을 때, 그것을 기준으로 또 나는 내 부모 노드 기준으로 어디 있는가를 확인해줘
-
 node_t *_insert_fixup(rbtree *t, node_t *new_node)
 {
   node_t *current = new_node;
+  node_t *parent = current->parent;
+  node_t *ancestor = current->parent->parent;
+  node_t *uncle = NULL;
 
-  // NOTE: loop should be running until new_node's parent's color isn't red.
-  while (current->parent->color == RBTREE_RED) // check's current parent's node color here
+  // NOTE: The loop should run as long as the parent of the current node is red.
+  //       Firstly, we check current parent's node color here.
+  //       This check is for case 1.
+  while (parent->color == RBTREE_RED)
   {
-    // NOTE: Pre required job before check each cases: check current parent node's location
-    if (current->parent == current->parent->parent->left) // if my parent's location is left of my ancestor,
+    // NOTE: Before checking each case,
+    //       determine whether the parent is the left or right child of the grandparent.
+    if (parent == ancestor->left) // if my parent's location is left of my ancestor,
     {
-      node_t *current_uncle = current->parent->parent->right; // we can set my uncle's location to my ancestor's right.
+      uncle = ancestor->right; // set current's uncle node location right to my ancestor node
 
-      if (current_uncle->color == RBTREE_RED) // if my uncle node's color is RED, we check case 1.
+      // If my uncle node's color is RED, we check case 1.
+      if (uncle->color == RBTREE_RED)
       {
-        current->parent->color = RBTREE_BLACK;
-        current_uncle = RBTREE_BLACK;
-        current->parent->parent->color = RBTREE_RED;
-        current = current->parent->parent;
+        // CASE 1: If both the parent and the uncle of the current node are red,
+        //         perform the following operations:
+        //         - recolor the parent to BLACK
+        //         - recolor the uncle to BLACK
+        //         - recolor the ancestor to RED
+        //         - move current up to the ancestor
+        parent->color = RBTREE_BLACK;
+        uncle = RBTREE_BLACK;
+        ancestor->color = RBTREE_RED;
+        current = ancestor;
       }
-      else // if my uncle node's color isn't RED, then we check case 2 -> 3 level.
+      // If my uncle node's color isn't RED, then we check case 2 -> 3 procedure.
+      else
       {
-        if (current == current->parent->right)
+        // CASE 2: 우리는 current의 조상 노드를 기준으로 current의 부모 노드가 어디 있는지 확인했다.
+        //         그것을 기준으로 current가 current의 부모 노드 기준으로 어디에 위치해 있는지를 확인하자.
+        //         current node가 current의 부모의 오른쪽에 위치해있다는 것은 현재 오른쪽으로 꺾여있는 형태라는 것이다.
+        //         이것은 case2 형태에 해당하며, 이것을 case3 형태로 만들기 위해서 rotate left연산을 수행하여 펴준다.
+        // NOTE: base point of rotation operation from case2 to case3 is current's parent node
+        if (current == parent->right)
         {
-          current = current->parent;
-          _rotate_left(t, current->parent);
+          current = parent;
+          _rotate_left(t, parent);
         }
-        current->parent->color = RBTREE_BLACK;
-        current->parent->parent->color = RBTREE_RED;
-        _rotate_right(t, current->parent->parent);
+        // CASE 3: 직전에 case2의 형태인지 확인했으니, case2의 형태가 아니라면
+        //         case3 형태에서 올바른 구조를 만들기 위한 작업을 실시한다.
+        //          - set current's parent node's color to BLACK
+        //          - set current's ancestor node's color to RED
+        //          - rotate right
+        // NOTE: base point of rotation operation on case3 is current's ancestor node
+        parent->color = RBTREE_BLACK;
+        ancestor->color = RBTREE_RED;
+        _rotate_right(t, ancestor);
       }
     }
     else // if my parent's location is right of my ancestor,
     {
-      node_t *current_uncle = current->parent->parent->left; // we can set my uncle's location to my ancestor's left.
+      uncle = ancestor->left; // we can set my uncle's location to my ancestor's left.
 
-      if (current_uncle->color == RBTREE_RED) // if my uncle node's color is RED, we check case 1.
+      // if my uncle node's color is RED, we check case 1.
+      if (uncle->color == RBTREE_RED)
       {
-        current->parent->color = RBTREE_BLACK;
-        current_uncle = RBTREE_BLACK;
-        current->parent->parent->color = RBTREE_RED;
-        current = current->parent->parent;
+        // CASE 1: if current's parent node is red and current's uncle node is red,
+        //         then do these operation.
+        //          - color current's parent into BLACK.
+        //          - color current's uncle node into BLACK.
+        //          - color current's uncle node into RED.
+        //          - move current to current's ancestor.
+        parent->color = RBTREE_BLACK;
+        uncle = RBTREE_BLACK;
+        ancestor->color = RBTREE_RED;
+        current = ancestor;
       }
       else // if my uncle node's color isn't RED, then we check case 2 -> 3 level.
       {
-        if (current == current->parent->left)
+        // CASE 2: 우리는 current의 조상 노드를 기준으로 current의 부모 노드가 어디 있는지 확인했다.
+        //         그것을 기준으로 current가 current의 부모 노드 기준으로 어디에 위치해 있는지를 확인하자.
+        //         current node가 current의 부모 노드의 왼쪽에 위치해있다는 것은 현재 왼쪽으로 꺾여있는 형태라는 것이다.
+        //         이것은 case2 형태에 해당하며, 이것을 case3 형태로 만들기 위해서 rotate right연산을 수행하여 펴준다.
+        // NOTE: base point of rotation operation from case2 to case3 is current's parent node
+        if (current == parent->left)
         {
-          current = current->parent;
-          _rotate_right(t, current->parent);
+          current = parent;
+          _rotate_right(t, parent);
         }
-        current->parent->color = RBTREE_BLACK;
-        current->parent->parent->color = RBTREE_RED;
-        _rotate_left(t, current->parent->parent);
+        // CASE 3: 직전에 case2의 형태인지 확인했으니, case2의 형태가 아니라면
+        //         case3 형태에서 올바른 구조를 만들기 위한 작업을 실시한다.
+        //          - set current's parent node's color to BLACK
+        //          - set current's ancestor node's color to RED
+        //          - rotate left
+        // NOTE: base point of rotation operation on case3 is current's ancestor node
+        parent->color = RBTREE_BLACK;
+        ancestor->color = RBTREE_RED;
+        _rotate_left(t, ancestor);
       }
     }
   }
