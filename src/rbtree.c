@@ -28,12 +28,14 @@ rbtree *new_rbtree(void)
 
 void _delete_node(rbtree *t, node_t *node)
 {
-  // Base condition: if node is NIL node, then return.
+  // Base condition: if current node is NIL,
+  //                 then it means we are at leaf node.
   if (node == t->nil)
   {
     return;
   }
 
+  // post-order traversal (left->right->root)
   _delete_node(t, node->left);
   _delete_node(t, node->right);
 
@@ -41,9 +43,14 @@ void _delete_node(rbtree *t, node_t *node)
 }
 void delete_rbtree(rbtree *t)
 {
-  _delete_node(t, t->root);
-  t->root = NULL;
-  free(t->root);
+  // we don't need to call _delete_node when root node is NIL node
+  // becase it means that root has no node for now.
+  if (t->root != t->nil)
+  {
+    _delete_node(t, t->root);
+  }
+
+  // so we just free NIL node and rbtree memory.
   free(t->nil);
   free(t);
 }
