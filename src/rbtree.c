@@ -44,7 +44,7 @@ void _delete_node(rbtree *t, node_t *node)
 void delete_rbtree(rbtree *t)
 {
   // we don't need to call _delete_node when root node is NIL node
-  // becase it means that root has no node for now.
+  // because it means that root has no node for now.
   if (t->root != t->nil)
   {
     _delete_node(t, t->root);
@@ -277,8 +277,23 @@ node_t *rbtree_insert(rbtree *t, const key_t key)
 
 node_t *rbtree_find(const rbtree *t, const key_t key)
 {
-  // TODO: implement find
-  return t->root;
+  node_t *current = t->root;
+  while (current != t->nil)
+  {
+    if (current->key < key)
+    {
+      current = current->right;
+    }
+    else if (current->key > key)
+    {
+      current = current->left;
+    }
+    else
+    {
+      return current;
+    }
+  }
+  return NULL;
 }
 
 node_t *rbtree_min(const rbtree *t)
