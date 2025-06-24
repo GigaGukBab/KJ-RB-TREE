@@ -188,9 +188,11 @@ node_t *_insert_fixup(rbtree *t, node_t *new_node)
         //         - recolor the ancestor to RED
         //         - move current up to the ancestor
         parent->color = RBTREE_BLACK;
-        uncle = RBTREE_BLACK;
+        uncle->color = RBTREE_BLACK;
         ancestor->color = RBTREE_RED;
         current = ancestor;
+        parent = current->parent;
+        ancestor = parent->parent;
       }
       // If my uncle node's color isn't RED, then we check case 2 -> 3 procedure.
       else
@@ -230,9 +232,11 @@ node_t *_insert_fixup(rbtree *t, node_t *new_node)
         //          - color current's uncle node into RED.
         //          - move current to current's ancestor.
         parent->color = RBTREE_BLACK;
-        uncle = RBTREE_BLACK;
+        uncle->color = RBTREE_BLACK;
         ancestor->color = RBTREE_RED;
         current = ancestor;
+        parent = current->parent;
+        ancestor = parent->parent;
       }
       else // if my uncle node's color isn't RED, then we check case 2 -> 3 level.
       {
