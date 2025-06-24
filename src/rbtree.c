@@ -7,6 +7,9 @@ node_t *_insert_fixup(rbtree *t, node_t *new_node);
 void _rotate_left(rbtree *t, node_t *x);
 void _rotate_right(rbtree *t, node_t *x);
 
+void _rb_transplant(rbtree *t, node_t *replacement_node, node_t *substitution_node);
+node_t *_find_subtree_min(node_t *x, node_t *nil);
+
 rbtree *new_rbtree(void)
 {
   // initalize rbtree structure
@@ -324,11 +327,103 @@ node_t *rbtree_max(const rbtree *t)
   return current;
 }
 
+void _rb_transplant(rbtree *t, node_t *replacement_node, node_t *substitution_node)
+{
+  if (replacement_node->parent == t->nil)
+  {
+    t->root = substitution_node;
+  }
+  else if (replacement_node->parent->left == replacement_node)
+  {
+    replacement_node->parent->left = substitution_node;
+  }
+  else
+  {
+    replacement_node->parent->right = substitution_node;
+  }
+  substitution_node->parent = replacement_node->parent;
 }
+node_t *_find_subtree_min(node_t *right_subtree, node_t *nil)
+{
+  node_t *current = right_subtree;
 
+  while (current->left != nil)
+  {
+    current = current->left;
+  }
+  return current;
+}
 int rbtree_erase(rbtree *t, node_t *p)
 {
-  // TODO: implement erase
+  node_t *target_node_to_delete = NULL;
+  key_t removed_node_original_color = NULL;
+
+  node_t *fixup_start_node = NULL;
+  node_t *node_actually_removed = NULL;
+
+  // STEP 1: find target node
+  target_node_to_delete = rbtree_find(t, p->key);
+
+  // ! if we cannot find target node, then there's nothing to erase.
+  if (target_node_to_delete == NULL)
+  {
+    return 0;
+  }
+
+  // NOTE: Save color of node that will actually be removed from the tree
+  node_actually_removed = target_node_to_delete;
+  removed_node_original_color = target_node_to_delete->color;
+
+  // CASE 1: target node has no children
+  if (target_node_to_delete->left == t->nil &&
+      target_node_to_delete->right == t->nil)
+  {
+    fixup_start_node = t->nil;
+    _rb_transplant(t, target_node_to_delete, t->nil);
+  }
+
+  // CASE 2: only right child exists
+  else if (target_node_to_delete->left == t->nil)
+  {
+    fixup_start_node = target_node_to_delete->right;
+    _rb_transplant(t, target_node_to_delete, target_node_to_delete->right);
+  }
+
+  // CASE 3: only left child exists
+  else if (target_node_to_delete->right == t->nil)
+  {
+    fixup_start_node = target_node_to_delete->left;
+    _rb_transplant(t, target_node_to_delete, target_node_to_delete->left);
+  }
+
+  // CASE 4: both children exist
+  else
+  {
+    node_actually_removed = _find_subtree_min(target_node_to_delete->right, t->nil);
+
+    removed_node_original_color = node_actually_removed->color;
+
+    fixup_start_node = target_node_to_delete->right;
+
+    if (node_actually_removed != target_node_to_delete->right)
+    {
+      _rb_transplant(t, node_actually_removed, node_actually_removed->right);
+      node_actually_removed->right = target_node_to_delete->right;
+      node_actually_removed->right->parent = node_actually_removed;
+    }
+
+    fixup_start_node->parent = node_actually_removed;
+    _rb_transplant(t, target_node_to_delete, node_actually_removed);
+    node_actually_removed->left = target_node_to_delete->left;
+    node_actually_removed->left->parent = node_actually_removed;
+    node_actually_removed->color = target_node_to_delete->color;
+  }
+
+  if (removed_node_original_color == RBTREE_BLACK)
+  {
+    // rb_delete_fixup(t, fixup_start_node);
+  }
+
   return 0;
 }
 
