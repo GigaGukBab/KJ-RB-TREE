@@ -19,9 +19,9 @@ rbtree *new_rbtree(void)
   node_t *nil = (node_t *)calloc(1, sizeof(node_t));
   nil->color = RBTREE_BLACK;
   nil->key = 0;
-  nil->parent = NULL;
-  nil->left = NULL;
-  nil->right = NULL;
+  nil->parent = t->nil;
+  nil->left = t->nil;
+  nil->right = t->nil;
 
   t->nil = nil;
   t->root = nil;
