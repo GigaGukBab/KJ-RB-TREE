@@ -457,7 +457,7 @@ void _rb_delete_fixup(rbtree *t, node_t *curr)
 int rbtree_erase(rbtree *t, node_t *p)
 {
   node_t *target_node_to_delete = NULL;
-  key_t removed_node_original_color = NULL;
+  key_t removed_node_original_color = RBTREE_BLACK;
 
   node_t *fixup_start_node = NULL;
   node_t *node_actually_removed = NULL;
@@ -527,6 +527,8 @@ int rbtree_erase(rbtree *t, node_t *p)
   {
     _rb_delete_fixup(t, fixup_start_node);
   }
+
+  free(node_actually_removed);
 
   return 0;
 }

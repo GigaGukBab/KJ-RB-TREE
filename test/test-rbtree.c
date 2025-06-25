@@ -71,7 +71,6 @@ void test_erase_root(const key_t key)
 #else
   assert(t->root == NULL);
 #endif
-
   delete_rbtree(t);
 }
 
