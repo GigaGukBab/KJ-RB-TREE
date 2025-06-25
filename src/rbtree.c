@@ -9,6 +9,7 @@ void _rotate_right(rbtree *t, node_t *x);
 
 void _rb_transplant(rbtree *t, node_t *replacement_node, node_t *substitution_node);
 node_t *_find_subtree_min(node_t *x, node_t *nil);
+void _rb_delete_fixup(rbtree *t, node_t *x);
 
 rbtree *new_rbtree(void)
 {
@@ -353,6 +354,104 @@ node_t *_find_subtree_min(node_t *right_subtree, node_t *nil)
   }
   return current;
 }
+void _rb_delete_fixup(rbtree *t, node_t *curr)
+{
+  node_t *brother = NULL;
+  while (curr != t->root && curr->color == RBTREE_BLACK)
+  {
+    // NOTE: check current location
+    if (curr == curr->parent->left)
+    {
+      brother = curr->parent->right; // set curr's brother
+
+      // CASE 1: 내 형제의 색깔이 RED일 경우
+      if (brother->color == RBTREE_RED)
+      {
+        brother->color = RBTREE_BLACK;
+        curr->parent->color = RBTREE_RED;
+        _rotate_left(t, curr->parent);
+        brother = curr->parent->right; // set new brother of curr
+      }
+
+      // CASE 2: 내 형제의 자식 노드 둘다 색깔이 BLACK일 경우
+      if (brother->left->color == RBTREE_BLACK &&
+          brother->right->color == RBTREE_BLACK)
+      {
+        // NOTE: 흡성대법 이후 다시 while문 체크하러 감
+        brother->color = RBTREE_RED;
+        curr = curr->parent;
+      }
+      else
+      {
+        // CASE 3: 내 형제의 자식 중 나와 가까운 쪽 자식 색상이 RED이고, 먼 쪽이 BLACK일 경우
+        if (brother->right->color == RBTREE_BLACK)
+        {
+          // NOTE: brother의 왼쪽 자식(나와 가까운 쪽 자식)의 색깔을 BLACK
+          //       brother의 색상을 RED로
+          brother->left->color = RBTREE_BLACK;
+          brother->color = RBTREE_RED;
+          _rotate_right(t, brother);
+          brother = curr->parent->right; // set new brother of curr
+        }
+        // CASE 4: 내 형제의 자식 중 나와 먼 쪽이 RED일 경우
+        // NOTE: brother와 brother의 부모와의 색상 교환이 이루어진다
+        //        - broter를 brother parent(curr의 parent 정보로)의 색으로 칠함
+        //        - brother parent는 기존 brother의 색상이었던 BLACK으로 칠해준다
+        brother->color = curr->parent->color;
+        curr->parent->color = RBTREE_BLACK;
+        brother->right->color = RBTREE_BLACK;
+        _rotate_left(t, curr->parent);
+        curr = t->root; // double black 해결
+      }
+    }
+    else
+    {
+      brother = curr->parent->left;
+
+      // CASE 1: 내 형제의 색깔이 RED일 경우
+      if (brother->color == RBTREE_RED)
+      {
+        brother->color = RBTREE_BLACK;
+        curr->parent->color = RBTREE_RED;
+        _rotate_right(t, curr->parent);
+        brother = curr->parent->left; // set new brother of curr
+      }
+
+      // CASE 2: 내 형제의 자식 노드 둘다 색깔이 BLACK일 경우
+      if (brother->left->color == RBTREE_BLACK &&
+          brother->right->color == RBTREE_BLACK)
+      {
+        // NOTE: 흡성대법 이후 다시 while문 체크하러 감
+        brother->color = RBTREE_RED;
+        curr = curr->parent;
+      }
+      else
+      {
+        // CASE 3: 내 형제의 자식 중 나와 가까운 쪽 자식 색상이 RED이고, 먼 쪽이 BLACK일 경우
+        if (brother->left->color == RBTREE_BLACK)
+        {
+          // STEP: brother와 brother의 부모와의 색상 교환이 이루어진다
+          //       - brother의 오른쪽 자식(나와 가까운 쪽 자식)의 색깔을 BLACK
+          //       - brother의 색상을 RED로
+          brother->right->color = RBTREE_BLACK;
+          brother->color = RBTREE_RED;
+          _rotate_left(t, brother);
+          brother = curr->parent->left; // set new brother of curr
+        }
+        // CASE 4: 내 형제의 자식 중 나와 먼 쪽이 RED일 경우
+        // STEP: brother와 brother의 부모와의 색상 교환이 이루어진다
+        //       - broter를 brother parent(curr의 parent 정보로)의 색으로 칠함
+        //       - brother parent는 기존 brother의 색상이었던 BLACK으로 칠해준다
+        brother->color = curr->parent->color;
+        curr->parent->color = RBTREE_BLACK;
+        brother->left->color = RBTREE_BLACK;
+        _rotate_right(t, curr->parent);
+        curr = t->root; // double black 해결
+      }
+    }
+  }
+  curr->color = RBTREE_BLACK;
+}
 int rbtree_erase(rbtree *t, node_t *p)
 {
   node_t *target_node_to_delete = NULL;
@@ -413,7 +512,7 @@ int rbtree_erase(rbtree *t, node_t *p)
     }
     else
     {
-    fixup_start_node->parent = node_actually_removed;
+      fixup_start_node->parent = node_actually_removed;
     }
 
     _rb_transplant(t, target_node_to_delete, node_actually_removed);
@@ -424,7 +523,7 @@ int rbtree_erase(rbtree *t, node_t *p)
 
   if (removed_node_original_color == RBTREE_BLACK)
   {
-    // rb_delete_fixup(t, fixup_start_node);
+    _rb_delete_fixup(t, fixup_start_node);
   }
 
   return 0;
