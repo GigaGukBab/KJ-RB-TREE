@@ -384,7 +384,8 @@ void _rb_delete_fixup(rbtree *t, node_t *curr)
       else
       {
         // CASE 3: 내 형제의 자식 중 나와 가까운 쪽 자식 색상이 RED이고, 먼 쪽이 BLACK일 경우
-        if (brother->right->color == RBTREE_BLACK)
+        if (brother->left->color == RBTREE_RED &&
+            brother->right->color == RBTREE_BLACK)
         {
           // NOTE: brother의 왼쪽 자식(나와 가까운 쪽 자식)의 색깔을 BLACK
           //       brother의 색상을 RED로
@@ -428,7 +429,8 @@ void _rb_delete_fixup(rbtree *t, node_t *curr)
       else
       {
         // CASE 3: 내 형제의 자식 중 나와 가까운 쪽 자식 색상이 RED이고, 먼 쪽이 BLACK일 경우
-        if (brother->left->color == RBTREE_BLACK)
+        if (brother->left->color == RBTREE_BLACK &&
+            brother->right->color == RBTREE_RED)
         {
           // STEP: brother와 brother의 부모와의 색상 교환이 이루어진다
           //       - brother의 오른쪽 자식(나와 가까운 쪽 자식)의 색깔을 BLACK
