@@ -79,6 +79,7 @@ int main()
         // print_tree_horizontal(t->root, t->nil, 0);       // 콘솔에 수평으로 출력하는 함수
         print_tree_vertical(t->root, t->nil);            // 콘솔에 수직으로 출력하는 함수
         rbtree_to_svg(t->root, t->nil, img_file_buffer); // 이미지 출력 하는 함수
+        free(remove);
     }
 
     delete_rbtree(t);
