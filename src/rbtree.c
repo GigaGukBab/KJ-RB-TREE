@@ -403,7 +403,7 @@ int rbtree_erase(rbtree *t, node_t *p)
 
     removed_node_original_color = node_actually_removed->color;
 
-    fixup_start_node = target_node_to_delete->right;
+    fixup_start_node = node_actually_removed->right;
 
     if (node_actually_removed != target_node_to_delete->right)
     {
@@ -411,8 +411,11 @@ int rbtree_erase(rbtree *t, node_t *p)
       node_actually_removed->right = target_node_to_delete->right;
       node_actually_removed->right->parent = node_actually_removed;
     }
-
+    else
+    {
     fixup_start_node->parent = node_actually_removed;
+    }
+
     _rb_transplant(t, target_node_to_delete, node_actually_removed);
     node_actually_removed->left = target_node_to_delete->left;
     node_actually_removed->left->parent = node_actually_removed;
