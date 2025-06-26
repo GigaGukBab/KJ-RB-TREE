@@ -13,11 +13,17 @@ void _rb_delete_fixup(rbtree *t, node_t *x);
 
 rbtree *new_rbtree(void)
 {
-  rbtree *t = calloc(1, sizeof(rbtree));
-  node_t *nil = calloc(1, sizeof(node_t));
+  // initalize rbtree structure
+  rbtree *t = (rbtree *)calloc(1, sizeof(rbtree));
+
+  // initalize NIL node
+  node_t *nil = (node_t *)calloc(1, sizeof(node_t));
+
+  // set nils
   t->nil = nil;
   t->root = nil;
 
+  // set NIL node's property
   nil->color = RBTREE_BLACK;
   nil->key = 0;
   nil->parent = nil;
