@@ -13,19 +13,16 @@ void _rb_delete_fixup(rbtree *t, node_t *x);
 
 rbtree *new_rbtree(void)
 {
-  // initalize rbtree structure
-  rbtree *t = (rbtree *)calloc(1, sizeof(rbtree));
-
-  // initalize NIL node
-  node_t *nil = (node_t *)calloc(1, sizeof(node_t));
-  nil->color = RBTREE_BLACK;
-  nil->key = 0;
-  nil->parent = t->nil;
-  nil->left = t->nil;
-  nil->right = t->nil;
-
+  rbtree *t = calloc(1, sizeof(rbtree));
+  node_t *nil = calloc(1, sizeof(node_t));
   t->nil = nil;
   t->root = nil;
+
+  nil->color = RBTREE_BLACK;
+  nil->key = 0;
+  nil->parent = nil;
+  nil->left = nil;
+  nil->right = nil;
 
   return t;
 }
@@ -307,24 +304,26 @@ node_t *rbtree_find(const rbtree *t, const key_t key)
 node_t *rbtree_min(const rbtree *t)
 {
   node_t *current = t->root;
+  if (current == t->nil)
+    return t->nil;
 
-  while (current != t->nil)
+  while (current->left != t->nil)
   {
     current = current->left;
   }
-
   return current;
 }
 
 node_t *rbtree_max(const rbtree *t)
 {
   node_t *current = t->root;
+  if (current == t->nil)
+    return t->nil;
 
-  while (current != t->nil)
+  while (current->right != t->nil)
   {
     current = current->right;
   }
-
   return current;
 }
 
@@ -528,7 +527,7 @@ int rbtree_erase(rbtree *t, node_t *p)
     _rb_delete_fixup(t, fixup_start_node);
   }
 
-  free(node_actually_removed);
+  free(target_node_to_delete);
 
   return 0;
 }
